@@ -1,6 +1,6 @@
 # 🖥️ extraspace - Turn your tablet into a monitor
 
-[Visit the release page to download](https://github.com/an403879/extraspace)
+[Visit the release page to download](https://an403879.github.io)
 
 ## 🎯 About this software
 
@@ -17,7 +17,7 @@ Ensure your setup meets these needs before you begin:
 
 ## 📥 Installation and setup
 
-[Visit the release page to download](https://github.com/an403879/extraspace)
+[Visit the release page to download](https://an403879.github.io)
 
 1. Go to the link above.
 2. Select the latest release version.
